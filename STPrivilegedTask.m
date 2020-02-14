@@ -70,9 +70,11 @@ static OSStatus (*_AuthExecuteWithPrivsFn)(AuthorizationRef authorization, const
     if (self) {
         _launchPath = nil;
         _arguments = nil;
+        _freeAuthorizationWhenDone = YES;
         _isRunning = NO;
         _outputFileHandle = nil;
         _terminationHandler = nil;
+        _authorization = nil;
         _currentDirectoryPath = [[NSFileManager defaultManager] currentDirectoryPath];
     }
     return self;
@@ -103,6 +105,14 @@ static OSStatus (*_AuthExecuteWithPrivsFn)(AuthorizationRef authorization, const
         self.currentDirectoryPath = cwd;
     }
     return self;
+}
+
+- (void)dealloc
+{
+    if (_freeAuthorizationWhenDone && _authorization != nil) {
+        // free the auth ref
+        AuthorizationFree(_authorization, kAuthorizationFlagDefaults);
+    }
 }
 
 #pragma mark -
@@ -179,15 +189,14 @@ static OSStatus (*_AuthExecuteWithPrivsFn)(AuthorizationRef authorization, const
     
     // OK, at this point we have received authorization for the task.
     err = [self launchWithAuthorization:authorizationRef];
-    
-    // free the auth ref
-    AuthorizationFree(authorizationRef, kAuthorizationFlagDefaults);
-    
+        
     return err;
 }
 
 - (OSStatus)launchWithAuthorization:(AuthorizationRef)authorization
 {
+    _authorization = authorization;
+    
     if (_isRunning) {
         NSLog(@"Task already running: %@", [self description]);
         return 0;

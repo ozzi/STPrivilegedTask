@@ -39,11 +39,13 @@ extern const OSStatus errAuthorizationFnNoLongerExists;
 @property (copy) NSArray *arguments;
 @property (copy) NSString *currentDirectoryPath;
 @property (copy) NSString *launchPath;
+@property (assign) BOOL freeAuthorizationWhenDone;
 
 @property (readonly) NSFileHandle *outputFileHandle;
 @property (readonly) BOOL isRunning;
 @property (readonly) pid_t processIdentifier;
 @property (readonly) int terminationStatus;
+@property (readonly) AuthorizationRef authorization;
 
 @property (copy) void (^terminationHandler)(STPrivilegedTask *);
 
